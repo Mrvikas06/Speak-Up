@@ -51,8 +51,6 @@
     <p class="app-tagline">Let's practice talking together! 🌈</p>
   </div>
 
-  <p class="section-label">Choose a category to start:</p>
-
   <div class="mic-test-section">
     <button id="mic-test-btn" class="mic-test-btn" onclick="testMicrophone()">
       🎤 Test Microphone First
@@ -60,12 +58,21 @@
     <div id="mic-test-status" class="mic-test-status" style="display:none;"></div>
   </div>
 
-  <div class="cats">
+  <p class="section-label">Choose a topic to practice:</p>
+
+  <div class="filter-bar" role="tablist" aria-label="Curriculum levels">
+    <button class="filter-btn active" data-filter="all" onclick="filterCategories('all')">All Topics</button>
+    <button class="filter-btn" data-filter="beginner" onclick="filterCategories('beginner')">Beginner</button>
+    <button class="filter-btn" data-filter="intermediate" onclick="filterCategories('intermediate')">Intermediate</button>
+    <button class="filter-btn" data-filter="advanced" onclick="filterCategories('advanced')">Advanced</button>
+  </div>
+
+  <div class="cats" id="cats-grid">
     <div class="cat-card vowels" tabindex="0" role="button" aria-label="Practice vowels" onclick="startCategory('vowels')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();startCategory('vowels');}">
       <span class="cat-icon">🔤</span>
       <div class="cat-name">Vowels</div>
       <div class="cat-desc">A · E · I · O · U sounds</div>
-      <span class="cat-badge">5 letters</span>
+      <span class="cat-badge">5 sounds</span>
     </div>
     <div class="cat-card words" tabindex="0" role="button" aria-label="Practice words" onclick="startCategory('words')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();startCategory('words');}">
       <span class="cat-icon">🐱</span>

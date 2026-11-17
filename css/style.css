@@ -38,6 +38,14 @@ body{
 
 .section-label{font-size:1.4rem;font-weight:800;color:var(--dark);opacity:.75;margin-bottom:1.25rem;align-self:flex-start;max-width:760px;width:100%}
 
+/* Filter bar */
+.filter-bar{display:flex;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap;justify-content:center;max-width:760px;width:100%}
+.filter-btn{background:var(--white);border:2px solid #E2DFF5;border-radius:999px;padding:8px 18px;
+  font-family:inherit;font-size:.9rem;font-weight:800;color:var(--dark);cursor:pointer;
+  transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.filter-btn:hover{background:#F7F5FF;border-color:var(--purple);transform:translateY(-1px)}
+.filter-btn.active{background:var(--dark);color:var(--white);border-color:var(--dark);box-shadow:0 4px 14px rgba(45,45,91,.25)}
+
 .cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1.25rem;width:100%;max-width:760px}
 .cat-card{background:var(--white);border-radius:28px;padding:2rem 1.5rem;text-align:center;cursor:pointer;
   transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s;
@@ -45,15 +53,27 @@ body{
 .cat-card:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 18px 44px rgba(0,0,0,.13)}
 .cat-card:active{transform:scale(.95)}
 .cat-card.vowels{border-color:var(--coral)}
+.cat-card.alphabet{border-color:var(--blue)}
+.cat-card.numbers{border-color:var(--yellow)}
+.cat-card.colors{border-color:var(--pink)}
 .cat-card.words{border-color:var(--teal)}
+.cat-card.animals{border-color:var(--orange)}
+.cat-card.actions{border-color:var(--green)}
 .cat-card.phrases{border-color:var(--purple)}
+.cat-card.twisters{border-color:#D946EF}
 .cat-icon{font-size:3.5rem;display:block;margin-bottom:.6rem}
 .cat-name{font-size:1.8rem;font-weight:800;color:var(--dark);margin-bottom:.2rem}
 .cat-desc{font-size:.88rem;color:#9999BB;font-weight:800}
 .cat-badge{display:inline-block;margin-top:.7rem;padding:4px 14px;border-radius:999px;font-size:.82rem;font-weight:900}
 .vowels .cat-badge{background:#FFE8E8;color:#CC3333}
+.alphabet .cat-badge{background:#E8F4FF;color:#0369A1}
+.numbers .cat-badge{background:#FEF9C3;color:#854D0E}
+.colors .cat-badge{background:#FCE7F3;color:#9D174D}
 .words .cat-badge{background:#E0FAFB;color:#0F7F84}
+.animals .cat-badge{background:#FFEDD5;color:#C2410C}
+.actions .cat-badge{background:#DCFCE7;color:#15803D}
 .phrases .cat-badge{background:#EDE7FF;color:#6833CC}
+.twisters .cat-badge{background:#FAE8FF;color:#86198F}
 
 /* ──────────────────── PRACTICE ──────────────────── */
 .prac-header{width:100%;max-width:600px;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}

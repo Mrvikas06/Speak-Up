@@ -11,6 +11,59 @@ let isRec = false;
 let recTimeout = null;
 let testRecogInstance = null;
 let testTimeout = null;
+let currentFilter = 'all';
+
+// Curriculum Category Cards Rendering
+function renderCategoryCards() {
+  const grid = document.getElementById('cats-grid');
+  if (!grid || typeof CATS === 'undefined') return;
+  grid.innerHTML = '';
+
+  const catKeys = Object.keys(CATS);
+  catKeys.forEach(cat => {
+    const meta = (typeof CATEGORY_META !== 'undefined' && CATEGORY_META[cat]) || {
+      title: cat.charAt(0).toUpperCase() + cat.slice(1),
+      icon: '📚',
+      desc: 'Speech practice',
+      level: 'beginner',
+      badge: `${CATS[cat].length} items`
+    };
+
+    if (currentFilter !== 'all' && meta.level !== currentFilter) {
+      return;
+    }
+
+    const card = document.createElement('div');
+    card.className = `cat-card ${cat} ${meta.level}`;
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', `Practice ${meta.title}`);
+    card.onclick = () => startCategory(cat);
+    card.onkeydown = e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        startCategory(cat);
+      }
+    };
+
+    card.innerHTML = `
+      <span class="cat-icon">${meta.icon}</span>
+      <div class="cat-name">${meta.title}</div>
+      <div class="cat-desc">${meta.desc}</div>
+      <span class="cat-badge">${meta.badge}</span>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function filterCategories(level) {
+  if (typeof playClickSound === 'function') playClickSound();
+  currentFilter = level;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-filter') === level);
+  });
+  renderCategoryCards();
+}
 
 // Floating Background Bubbles
 function initBubbles() {
@@ -530,6 +583,7 @@ window.addEventListener('keydown', e => {
 // Initialize on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
   initBubbles();
+  renderCategoryCards();
   if ('speechSynthesis' in window) {
     window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
   }
