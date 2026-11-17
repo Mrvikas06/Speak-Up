@@ -322,15 +322,15 @@ body{font-family: 'Segoe UI', 'Trebuchet MS', Arial, sans-serif;min-height:100vh
 // ══════════════════════════════
 const CATS = {
   vowels:[
-    {word:'A',emoji:'🍎',hint:'like Apple',speak:'Ay'},
-    {word:'E',emoji:'🐘',hint:'like Elephant',speak:'Ee'},
-    {word:'I',emoji:'🍦',hint:'like Ice cream',speak:'Eye'},
-    {word:'O',emoji:'🍊',hint:'like Orange',speak:'Oh'},
-    {word:'U',emoji:'☂️',hint:'like Umbrella',speak:'Ooh'},
+    {word:'A',emoji:'🍎',hint:'like Apple',speak:'Ay',aliases:['ay','a','eh']},
+    {word:'E',emoji:'🐘',hint:'like Elephant',speak:'Ee',aliases:['ee','e']},
+    {word:'I',emoji:'🍦',hint:'like Ice cream',speak:'Eye',aliases:['eye','i','aye']},
+    {word:'O',emoji:'🍊',hint:'like Orange',speak:'Oh',aliases:['oh','o','owe']},
+    {word:'U',emoji:'☂️',hint:'like Umbrella',speak:'Ooh',aliases:['you','u','oo','ooh','yu']},
   ],
   words:[
-    {word:'Cat',emoji:'🐱',hint:'a fluffy pet'},
-    {word:'Dog',emoji:'🐶',hint:'a loyal friend'},
+    {word:'Cat',emoji:'🐱',hint:'a fluffy pet',aliases:['kitty','kitten']},
+    {word:'Dog',emoji:'🐶',hint:'a loyal friend',aliases:['puppy','doggy']},
     {word:'Ball',emoji:'⚽',hint:'you can kick it'},
     {word:'Sun',emoji:'☀️',hint:'shines in the sky'},
     {word:'Tree',emoji:'🌳',hint:'grows in a park'},
@@ -341,12 +341,12 @@ const CATS = {
     {word:'Rain',emoji:'🌧️',hint:'falls from clouds'},
   ],
   phrases:[
-    {word:'Hello',emoji:'👋',hint:'a friendly greeting'},
-    {word:'Thank you',emoji:'🙏',hint:'show you are grateful'},
-    {word:'Good morning',emoji:'🌅',hint:'say at the start of the day'},
-    {word:'I love you',emoji:'❤️',hint:'show you care'},
-    {word:'Please',emoji:'😊',hint:'be kind and polite'},
-    {word:'Sorry',emoji:'🤗',hint:'when you made a mistake'},
+    {word:'Hello',emoji:'👋',hint:'a friendly greeting',aliases:['hi','hey']},
+    {word:'Thank you',emoji:'🙏',hint:'show you are grateful',aliases:['thanks','thank u']},
+    {word:'Good morning',emoji:'🌅',hint:'say at the start of the day',aliases:['morning']},
+    {word:'I love you',emoji:'❤️',hint:'show you care',aliases:['love you']},
+    {word:'Please',emoji:'😊',hint:'be kind and polite',aliases:['plz']},
+    {word:'Sorry',emoji:'🤗',hint:'when you made a mistake',aliases:['my bad']},
   ]
 };
 
@@ -544,41 +544,13 @@ function startRec(){
         console.log('✅ Final result:',finalText);
         stopRec();
         
-        const target=items[idx].word.toLowerCase().trim();
-        console.log('🎯 Target:',target,'Heard:',finalText);
-        
-        // Clean up the text - remove punctuation and extra spaces
-        const cleanHeard=finalText.replace(/[.,!?;:]/g,'').trim();
-        const cleanTarget=target.replace(/[.,!?;:]/g,'').trim();
-        
-        // Flexible matching - try multiple strategies
-        let match=false;
-        
-        // Strategy 1: Exact match
-        if(cleanHeard===cleanTarget){
-          match=true;
-          console.log('✅ Match: exact');
-        }
-        // Strategy 2: Heard contains target or target contains heard
-        else if(cleanHeard.includes(cleanTarget)||cleanTarget.includes(cleanHeard)){
-          match=true;
-          console.log('✅ Match: partial');
-        }
-        // Strategy 3: First word matches
-        else if(cleanHeard.split(/[\s\-]/)[0]===cleanTarget.split(/[\s\-]/)[0]){
-          match=true;
-          console.log('✅ Match: first word');
-        }
-        // Strategy 4: Levenshtein distance for short words
-        else if(cleanTarget.length<=5 && levenshtein(cleanHeard,cleanTarget)<=1){
-          match=true;
-          console.log('✅ Match: close enough');
-        }
+        const currentItem=items[idx];
+        const match=checkSpeechMatch(finalText, currentItem);
         
         if(match){
-          handleCorrect(cleanHeard);
+          handleCorrect(finalText);
         }else{
-          handleWrong(cleanHeard);
+          handleWrong(finalText);
         }
       }
     };
@@ -647,6 +619,52 @@ function stopRec(){
   const wave=document.getElementById('mic-wave');
   if(wave) wave.classList.remove('active');
   console.log('Recording stopped');
+}
+
+// Normalize string for comparison
+function cleanSpeechText(str){
+  return (str||'').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function checkSpeechMatch(heard, currentItem){
+  if(!heard || !currentItem) return false;
+  const cleanHeard = cleanSpeechText(heard);
+  const cleanTarget = cleanSpeechText(currentItem.word);
+  if(!cleanHeard || !cleanTarget) return false;
+
+  const targets = [cleanTarget];
+  if(Array.isArray(currentItem.aliases)){
+    currentItem.aliases.forEach(a => {
+      const ca = cleanSpeechText(a);
+      if(ca && !targets.includes(ca)) targets.push(ca);
+    });
+  }
+
+  const heardWords = cleanHeard.split(' ').filter(Boolean);
+
+  for(const tgt of targets){
+    if(cleanHeard === tgt) return true;
+    if(heardWords.includes(tgt)) return true;
+
+    if(cleanHeard.includes(tgt) || tgt.includes(cleanHeard)){
+      if(tgt.length > 1 || heardWords.includes(tgt)){
+        return true;
+      }
+    }
+
+    if(tgt.length >= 3){
+      for(const w of heardWords){
+        if(Math.abs(w.length - tgt.length) <= 1 && levenshtein(w, tgt) <= 1){
+          return true;
+        }
+      }
+      if(levenshtein(cleanHeard, tgt) <= 1){
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 // Simple Levenshtein for short words
