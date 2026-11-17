@@ -1,0 +1,23 @@
+{
+  "name": "speak-up",
+  "version": "1.0.0",
+  "description": "Interactive speech practice application for kids with real-time speech recognition",
+  "main": "index.html",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "lint": "node --check js/data.js js/audio.js js/speech.js js/app.js"
+  },
+  "keywords": [
+    "speech-recognition",
+    "kids-education",
+    "speech-practice",
+    "web-speech-api",
+    "accessibility"
+  ],
+  "author": "Mrvikas06",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mrvikas06/Speak-Up.git"
+  }
+}
