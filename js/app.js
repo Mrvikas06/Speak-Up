@@ -157,6 +157,48 @@ function loadWord() {
   document.getElementById('w-emoji').textContent = it.emoji;
   document.getElementById('w-text').textContent = it.word;
   document.getElementById('w-hint').textContent = it.hint;
+
+  // Phonics breakdown
+  const phEl = document.getElementById('w-phonics');
+  if (phEl) {
+    phEl.textContent = it.phonics ? `sounds: / ${it.phonics} /` : '';
+    phEl.style.display = it.phonics ? 'inline-block' : 'none';
+  }
+
+  // Syllables pills
+  const sylWrap = document.getElementById('w-syllables');
+  if (sylWrap) {
+    sylWrap.innerHTML = '';
+    if (Array.isArray(it.syllables) && it.syllables.length > 0) {
+      it.syllables.forEach(s => {
+        const pill = document.createElement('button');
+        pill.className = 'syllable-pill';
+        pill.textContent = s;
+        pill.title = `Listen to "${s}"`;
+        pill.onclick = (e) => {
+          e.stopPropagation();
+          playSyllable(s);
+        };
+        sylWrap.appendChild(pill);
+      });
+      sylWrap.style.display = 'flex';
+    } else {
+      sylWrap.style.display = 'none';
+    }
+  }
+
+  // Example sentence
+  const sentWrap = document.getElementById('w-sentence-wrap');
+  const sentEl = document.getElementById('w-sentence');
+  if (sentWrap && sentEl) {
+    if (it.sentence) {
+      sentEl.textContent = `"${it.sentence}"`;
+      sentWrap.style.display = 'flex';
+    } else {
+      sentWrap.style.display = 'none';
+    }
+  }
+
   refreshDots();
 
   const sb = document.getElementById('speak-btn');
@@ -171,13 +213,27 @@ function loadWord() {
 }
 
 // Speech Playback
-function playWord() {
+function playWord(isSlow = false) {
   if (!items[idx]) return;
   speakWord(
     items[idx],
-    () => setStatus('🔊 Listen carefully...', 'listening'),
-    () => setStatus('🎤 Now your turn! Press Speak!', '')
+    () => setStatus(isSlow ? '🐢 Listening slowly...' : '🔊 Listen carefully...', 'listening'),
+    () => setStatus('🎤 Now your turn! Press Speak!', ''),
+    isSlow
   );
+}
+
+function playSyllable(syl) {
+  if (typeof playClickSound === 'function') playClickSound();
+  if (typeof speakText === 'function') speakText(syl, true);
+}
+
+function playSentence() {
+  if (!items[idx] || !items[idx].sentence) return;
+  if (typeof speakText === 'function') {
+    speakText(items[idx].sentence, false);
+    setStatus('🔊 Listening to example sentence...', 'listening');
+  }
 }
 
 // Speech Recognition

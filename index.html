@@ -101,10 +101,18 @@
     <span class="word-emoji" id="w-emoji">🍎</span>
     <div class="word-text" id="w-text">A</div>
     <div class="word-hint" id="w-hint">like Apple</div>
+    <div class="phonics-badge" id="w-phonics">sounds like: ay</div>
+    <div class="syllables-wrap" id="w-syllables"></div>
+    <div class="sentence-box" id="w-sentence-wrap" onclick="playSentence()" title="Click to hear in a sentence">
+      <span class="sentence-icon">💡</span>
+      <span class="sentence-text" id="w-sentence"></span>
+      <span class="sentence-play">🔊</span>
+    </div>
   </div>
 
   <div class="action-row">
-    <button class="action-btn listen-btn" id="listen-btn" onclick="playWord()">🔊 Listen</button>
+    <button class="action-btn listen-btn" id="listen-btn" onclick="playWord(false)">🔊 Listen</button>
+    <button class="action-btn slow-btn" id="slow-btn" onclick="playWord(true)">🐢 Slow</button>
     <button class="action-btn speak-btn" id="speak-btn" onclick="toggleSpeech()">🎤 Speak</button>
   </div>
 

@@ -103,16 +103,32 @@ body{
 .word-text{font-size:clamp(3.2rem,10vw,5.5rem);color:var(--dark);font-weight:900;line-height:1;margin-bottom:.4rem}
 .word-hint{font-size:.95rem;color:#AAAAC8;font-weight:800;margin-top:.2rem}
 
+.phonics-badge{display:inline-block;margin-top:.6rem;padding:3px 12px;background:#F0EEFF;
+  color:var(--dark);border-radius:999px;font-size:.85rem;font-weight:800;letter-spacing:.5px}
+
+.syllables-wrap{display:flex;gap:6px;justify-content:center;margin-top:.75rem;flex-wrap:wrap}
+.syllable-pill{background:#E0FAFB;border:2px solid #26D0CE;color:#0F7F84;border-radius:12px;
+  padding:4px 10px;font-size:.85rem;font-weight:800;cursor:pointer;transition:transform .15s}
+.syllable-pill:hover{transform:scale(1.08);background:#CCF7F8}
+
+.sentence-box{margin-top:1rem;background:#F8F7FF;border:2px dashed #D6D0F5;border-radius:16px;
+  padding:.75rem 1rem;font-size:.9rem;font-weight:700;color:var(--dark);cursor:pointer;
+  display:flex;align-items:center;gap:8px;justify-content:center;transition:background .2s}
+.sentence-box:hover{background:#EDE9FE}
+.sentence-icon{font-size:1.1rem}
+.sentence-play{font-size:.9rem;opacity:.7}
+
 /* Buttons row */
-.action-row{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;max-width:480px;width:100%;margin-bottom:1.25rem}
-.action-btn{border:none;border-radius:22px;padding:1.1rem 2rem;
-  font-size:1.3rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:10px;
+.action-row{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;max-width:480px;width:100%;margin-bottom:1.25rem}
+.action-btn{border:none;border-radius:22px;padding:1rem 1.4rem;
+  font-size:1.15rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;
   transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s;
-  box-shadow:0 6px 22px rgba(0,0,0,.13);flex:1;justify-content:center;min-width:140px}
+  box-shadow:0 6px 22px rgba(0,0,0,.13);flex:1;justify-content:center;min-width:110px}
 .action-btn:hover{transform:translateY(-5px) scale(1.04);box-shadow:0 14px 34px rgba(0,0,0,.16)}
 .action-btn:active{transform:scale(.95);box-shadow:0 2px 8px rgba(0,0,0,.09)}
 .action-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .listen-btn{background:var(--blue);color:var(--white)}
+.slow-btn{background:#FFA552;color:var(--white)}
 .speak-btn{background:var(--coral);color:var(--white)}
 .speak-btn.recording{background:var(--green);animation:micPulse 1s ease-in-out infinite}
 @keyframes micPulse{

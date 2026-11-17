@@ -80,14 +80,14 @@ function checkSpeechMatch(heard, currentItem) {
 }
 
 // Text-to-Speech (Audio Playback)
-function speakWord(item, onStart, onEnd) {
+function speakWord(item, onStart, onEnd, isSlow = false) {
   if (!('speechSynthesis' in window)) return;
   const toSpeak = (item && (item.speak || item.word)) || '';
   if (!toSpeak) return;
 
   const utter = new SpeechSynthesisUtterance(toSpeak);
-  utter.rate = 0.72;
-  utter.pitch = 1.15;
+  utter.rate = isSlow ? 0.48 : 0.72;
+  utter.pitch = isSlow ? 1.05 : 1.15;
 
   const voices = window.speechSynthesis.getVoices();
   const preferredVoice = voices.find(x => /Samantha|Karen|Moira|Veena|Google UK/.test(x.name)) || voices[0];
@@ -96,6 +96,19 @@ function speakWord(item, onStart, onEnd) {
   if (onStart) utter.onstart = onStart;
   if (onEnd) utter.onend = onEnd;
 
+  window.speechSynthesis.cancel();
+  currentUtterance = utter;
+  window.speechSynthesis.speak(utter);
+}
+
+function speakText(text, isSlow = false) {
+  if (!('speechSynthesis' in window) || !text) return;
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = isSlow ? 0.5 : 0.75;
+  utter.pitch = 1.1;
+  const voices = window.speechSynthesis.getVoices();
+  const preferredVoice = voices.find(x => /Samantha|Karen|Moira|Veena|Google UK/.test(x.name)) || voices[0];
+  if (preferredVoice) utter.voice = preferredVoice;
   window.speechSynthesis.cancel();
   currentUtterance = utter;
   window.speechSynthesis.speak(utter);
@@ -114,6 +127,7 @@ if (typeof module !== 'undefined' && module.exports) {
     levenshtein,
     checkSpeechMatch,
     speakWord,
+    speakText,
     cancelSpeechSynthesis
   };
 }
