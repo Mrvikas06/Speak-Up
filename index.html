@@ -414,11 +414,15 @@ function buildDots(){
 }
 function refreshDots(){
   items.forEach((_,i)=>{
-    const d=document.getElementById('d'+i);if(!d)return;
-    d.className='pdot'+(i<idx?'done':i===idx?'current':'');
-    if(i<idx)d.className='pdot done';
-    else if(i===idx)d.className='pdot current';
-    else d.className='pdot';
+    const d=document.getElementById('d'+i);
+    if(!d) return;
+    if(i < idx){
+      d.className = 'pdot done';
+    } else if(i === idx){
+      d.className = 'pdot current';
+    } else {
+      d.className = 'pdot';
+    }
   });
 }
 function loadWord(){
@@ -455,8 +459,6 @@ function playWord(){
 // ══════════════════════════════
 //  SPEECH RECOGNITION
 // ══════════════════════════════
-let audioContext=null;
-let analyser=null;
 
 function toggleSpeech(){if(isRec)stopRec();else startRec();}
 
