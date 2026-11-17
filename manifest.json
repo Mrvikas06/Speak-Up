@@ -1,0 +1,16 @@
+{
+  "name": "SpeakUp! Speech Practice for Kids",
+  "short_name": "SpeakUp",
+  "description": "Fun, interactive speech practice app for kids with real-time speech recognition",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F0EEFF",
+  "theme_color": "#A78BFA",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
