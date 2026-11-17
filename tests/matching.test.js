@@ -1,6 +1,6 @@
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { checkSpeechMatch, cleanSpeechText } = require('../js/speech.js');
+const { checkSpeechMatch, cleanSpeechText, evaluatePronunciation } = require('../js/speech.js');
 const { CATS } = require('../js/data.js');
 
 describe('Speech Matching Logic Tests', () => {
@@ -66,5 +66,21 @@ describe('Speech Matching Logic Tests', () => {
     assert.equal(checkSpeechMatch('elephant', catItem), false);
     assert.equal(checkSpeechMatch('', catItem), false);
     assert.equal(checkSpeechMatch('banana', catItem), false);
+  });
+
+  test('evaluatePronunciation returns star rating and scoring percentage', () => {
+    const catItem = CATS.words.find(w => w.word === 'Cat');
+    const exactResult = evaluatePronunciation('cat', catItem);
+    assert.equal(exactResult.isMatch, true);
+    assert.equal(exactResult.stars, 3);
+    assert.equal(exactResult.scorePct, 100);
+
+    const closeResult = evaluatePronunciation('kitty', catItem);
+    assert.equal(closeResult.isMatch, true);
+    assert.ok(closeResult.stars >= 2);
+
+    const failResult = evaluatePronunciation('dog', catItem);
+    assert.equal(failResult.isMatch, false);
+    assert.equal(failResult.stars, 1);
   });
 });

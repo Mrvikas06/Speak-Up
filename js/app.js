@@ -315,12 +315,14 @@ function startRec() {
       if (finalText) {
         stopRec();
         const currentItem = items[idx];
-        const match = checkSpeechMatch(finalText, currentItem);
+        const evalResult = typeof evaluatePronunciation === 'function'
+          ? evaluatePronunciation(finalText, currentItem)
+          : { isMatch: checkSpeechMatch(finalText, currentItem), stars: 3, feedback: 'Great job!' };
 
-        if (match) {
-          handleCorrect(finalText);
+        if (evalResult.isMatch) {
+          handleCorrect(finalText, evalResult);
         } else {
-          handleWrong(finalText);
+          handleWrong(finalText, evalResult);
         }
       }
     };
@@ -382,19 +384,21 @@ function stopRec() {
 }
 
 // Result Feedback
-function handleCorrect(said) {
+function handleCorrect(said, evalResult) {
   if (typeof playCorrectSound === 'function') playCorrectSound();
   score++;
   document.getElementById('score-val').textContent = score;
   spawnConfetti();
   spawnStars();
+  const starsCount = evalResult && evalResult.stars ? evalResult.stars : 3;
+  const starsDisplay = '⭐'.repeat(starsCount);
   const praises = ['Amazing! 🎉', 'Wonderful! ✨', 'Great job! 🌟', 'Superstar! ⭐', 'You did it! 🎊', 'Brilliant! 🌈', 'Perfect! 💫'];
-  const praise = praises[Math.floor(Math.random() * praises.length)];
+  const praise = (evalResult && evalResult.feedback) || praises[Math.floor(Math.random() * praises.length)];
   const isLast = idx >= items.length - 1;
-  showOverlay('🎉', praise, 'ok', `You said "${said}" perfectly!`, isLast ? '🏆 Finish!' : 'Next Word →');
+  showOverlay(starsDisplay, '🎉', praise, 'ok', `You said: "${said}"`, isLast ? '🏆 Finish!' : 'Next Word →');
 }
 
-function handleWrong(said) {
+function handleWrong(said, evalResult) {
   if (typeof playWrongSound === 'function') playWrongSound();
   const card = document.getElementById('word-card');
   if (card) {
@@ -404,12 +408,14 @@ function handleWrong(said) {
   const target = items[idx].word;
   const msg = !said
     ? `I didn't hear anything. Say "${target}" LOUDLY!`
-    : `I heard "${said}". Say "${target}" more clearly!`;
+    : (evalResult && evalResult.feedback) || `I heard "${said}". Say "${target}" more clearly!`;
 
-  showOverlay('😊', 'Keep Trying!', 'ng', msg, 'Skip →');
+  showOverlay('⭐', '😊', 'Keep Trying!', 'ng', msg, 'Skip →');
 }
 
-function showOverlay(icon, title, cls, msg, nextTxt) {
+function showOverlay(stars, icon, title, cls, msg, nextTxt) {
+  const starsEl = document.getElementById('r-stars');
+  if (starsEl) starsEl.textContent = stars || '⭐';
   document.getElementById('r-icon').textContent = icon;
   document.getElementById('r-title').textContent = title;
   document.getElementById('r-title').className = 'result-title ' + cls;

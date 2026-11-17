@@ -32,51 +32,64 @@ function levenshtein(a, b) {
   return dp[m][n];
 }
 
-// Robust speech comparison strategy
-function checkSpeechMatch(heard, currentItem) {
-  if (!heard || !currentItem) return false;
+// Evaluate pronunciation accuracy and calculate 1-3 star score
+function evaluatePronunciation(heard, currentItem) {
+  if (!heard || !currentItem) {
+    return { isMatch: false, stars: 0, scorePct: 0, feedback: "I didn't hear anything." };
+  }
+
   const cleanHeard = cleanSpeechText(heard);
   const cleanTarget = cleanSpeechText(currentItem.word);
-  if (!cleanHeard || !cleanTarget) return false;
+  if (!cleanHeard || !cleanTarget) {
+    return { isMatch: false, stars: 0, scorePct: 0, feedback: 'Please speak louder.' };
+  }
 
-  const targets = [cleanTarget];
-  if (Array.isArray(currentItem.aliases)) {
-    currentItem.aliases.forEach(a => {
-      const ca = cleanSpeechText(a);
-      if (ca && !targets.includes(ca)) targets.push(ca);
-    });
+  // Strategy 1: Exact target match
+  if (cleanHeard === cleanTarget) {
+    return { isMatch: true, stars: 3, scorePct: 100, feedback: 'Flawless pronunciation!' };
+  }
+
+  const aliases = Array.isArray(currentItem.aliases) ? currentItem.aliases.map(cleanSpeechText) : [];
+  if (aliases.includes(cleanHeard)) {
+    return { isMatch: true, stars: 3, scorePct: 98, feedback: 'Excellent pronunciation!' };
   }
 
   const heardWords = cleanHeard.split(' ').filter(Boolean);
+  if (heardWords.includes(cleanTarget)) {
+    return { isMatch: true, stars: 3, scorePct: 95, feedback: 'Great job, clearly spoken!' };
+  }
 
-  for (const tgt of targets) {
-    // Strategy 1: Exact string match
-    if (cleanHeard === tgt) return true;
-
-    // Strategy 2: Exact word token match
-    if (heardWords.includes(tgt)) return true;
-
-    // Strategy 3: Multi-character substring inclusion
-    if (cleanHeard.includes(tgt) || tgt.includes(cleanHeard)) {
-      if (tgt.length > 1 || heardWords.includes(tgt)) {
-        return true;
-      }
-    }
-
-    // Strategy 4: Levenshtein distance tolerance for close approximations
-    if (tgt.length >= 3) {
-      for (const w of heardWords) {
-        if (Math.abs(w.length - tgt.length) <= 1 && levenshtein(w, tgt) <= 1) {
-          return true;
-        }
-      }
-      if (levenshtein(cleanHeard, tgt) <= 1) {
-        return true;
-      }
+  for (const a of aliases) {
+    if (heardWords.includes(a)) {
+      return { isMatch: true, stars: 2, scorePct: 88, feedback: 'Very good! You got it!' };
     }
   }
 
-  return false;
+  // Strategy 2: Multi-word phrase or token inclusion
+  if (cleanHeard.includes(cleanTarget) || cleanTarget.includes(cleanHeard)) {
+    if (cleanTarget.length > 1 || heardWords.includes(cleanTarget)) {
+      return { isMatch: true, stars: 2, scorePct: 85, feedback: 'Nice effort! Well said!' };
+    }
+  }
+
+  // Strategy 3: Close Levenshtein phonetic approximation
+  if (cleanTarget.length >= 3) {
+    for (const w of heardWords) {
+      if (Math.abs(w.length - cleanTarget.length) <= 1 && levenshtein(w, cleanTarget) <= 1) {
+        return { isMatch: true, stars: 2, scorePct: 80, feedback: 'Very close, great speaking!' };
+      }
+    }
+    if (levenshtein(cleanHeard, cleanTarget) <= 1) {
+      return { isMatch: true, stars: 2, scorePct: 80, feedback: 'Very close pronunciation!' };
+    }
+  }
+
+  return { isMatch: false, stars: 1, scorePct: 40, feedback: `I heard "${cleanHeard}". Let's try again!` };
+}
+
+// Robust speech comparison strategy
+function checkSpeechMatch(heard, currentItem) {
+  return evaluatePronunciation(heard, currentItem).isMatch;
 }
 
 // Text-to-Speech (Audio Playback)
@@ -126,6 +139,7 @@ if (typeof module !== 'undefined' && module.exports) {
     cleanSpeechText,
     levenshtein,
     checkSpeechMatch,
+    evaluatePronunciation,
     speakWord,
     speakText,
     cancelSpeechSynthesis
