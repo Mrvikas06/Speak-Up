@@ -355,8 +355,12 @@ function startRec() {
         btn.disabled = false;
         btn.innerHTML = '⏹ Stop';
       }
-      const wave = document.getElementById('mic-wave');
-      if (wave) wave.classList.add('active');
+      if (typeof startLiveVisualizer === 'function') {
+        startLiveVisualizer('mic-wave');
+      } else {
+        const wave = document.getElementById('mic-wave');
+        if (wave) wave.classList.add('active');
+      }
       setStatus('🔴 LISTENING... speak anytime in the next 30 seconds!', 'listening');
 
       recTimeout = setTimeout(() => {
@@ -433,8 +437,12 @@ function startRec() {
     recog.onend = () => {
       if (recTimeout) clearTimeout(recTimeout);
       isRec = false;
-      const wave = document.getElementById('mic-wave');
-      if (wave) wave.classList.remove('active');
+      if (typeof stopLiveVisualizer === 'function') {
+        stopLiveVisualizer('mic-wave');
+      } else {
+        const wave = document.getElementById('mic-wave');
+        if (wave) wave.classList.remove('active');
+      }
     };
   }
 }
@@ -454,8 +462,12 @@ function stopRec() {
     btn.disabled = false;
     btn.innerHTML = '🎤 Speak';
   }
-  const wave = document.getElementById('mic-wave');
-  if (wave) wave.classList.remove('active');
+  if (typeof stopLiveVisualizer === 'function') {
+    stopLiveVisualizer('mic-wave');
+  } else {
+    const wave = document.getElementById('mic-wave');
+    if (wave) wave.classList.remove('active');
+  }
 }
 
 // Result Feedback

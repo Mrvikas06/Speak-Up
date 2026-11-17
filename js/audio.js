@@ -68,12 +68,89 @@ function toggleSound() {
   if (soundEnabled) playClickSound();
 }
 
+// Live Audio Waveform Visualizer
+let liveAudioStream = null;
+let liveAnalyser = null;
+let visualizerAnimId = null;
+
+async function startLiveVisualizer(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.classList.add('active');
+
+  if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    liveAudioStream = stream;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const source = ctx.createMediaStreamSource(stream);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 32;
+    source.connect(analyser);
+    liveAnalyser = analyser;
+
+    const bars = container.querySelectorAll('.wave-bar');
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    function update() {
+      if (!liveAnalyser) return;
+      liveAnalyser.getByteFrequencyData(dataArray);
+
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += dataArray[i];
+      }
+      const avg = sum / dataArray.length;
+
+      bars.forEach((bar, idx) => {
+        const val = dataArray[idx % dataArray.length] || avg;
+        const height = Math.max(6, Math.min(34, (val / 255) * 40));
+        bar.style.height = `${height}px`;
+      });
+
+      visualizerAnimId = requestAnimationFrame(update);
+    }
+    update();
+  } catch (err) {
+    // Keep standard CSS wave animation fallback
+  }
+}
+
+function stopLiveVisualizer(containerId) {
+  if (visualizerAnimId && typeof cancelAnimationFrame === 'function') {
+    cancelAnimationFrame(visualizerAnimId);
+    visualizerAnimId = null;
+  }
+  if (liveAudioStream) {
+    try {
+      liveAudioStream.getTracks().forEach(t => t.stop());
+    } catch (e) {}
+    liveAudioStream = null;
+  }
+  liveAnalyser = null;
+
+  const container = document.getElementById(containerId);
+  if (container) {
+    container.classList.remove('active');
+    const bars = container.querySelectorAll('.wave-bar');
+    bars.forEach(bar => {
+      bar.style.height = '';
+    });
+  }
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     playCorrectSound,
     playWrongSound,
     playClickSound,
     playCompleteSound,
-    toggleSound
+    toggleSound,
+    startLiveVisualizer,
+    stopLiveVisualizer
   };
 }
