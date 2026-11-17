@@ -6,6 +6,7 @@
 <title>SpeakUp! – Speech Practice for Kids</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:focus-visible{outline:3px solid var(--purple);outline-offset:3px}
 :root{
   --coral:#FF6B6B;--teal:#26D0CE;--purple:#A78BFA;--yellow:#FFD93D;
   --green:#6BCB77;--blue:#4DB8FF;--orange:#FFA552;--pink:#FF8ED4;
@@ -254,19 +255,19 @@ body{font-family: 'Segoe UI', 'Trebuchet MS', Arial, sans-serif;min-height:100vh
   </div>
 
   <div class="cats">
-    <div class="cat-card vowels" onclick="startCategory('vowels')">
+    <div class="cat-card vowels" tabindex="0" role="button" aria-label="Practice vowels" onclick="startCategory('vowels')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();startCategory('vowels');}">
       <span class="cat-icon">🔤</span>
       <div class="cat-name">Vowels</div>
       <div class="cat-desc">A · E · I · O · U sounds</div>
       <span class="cat-badge">5 letters</span>
     </div>
-    <div class="cat-card words" onclick="startCategory('words')">
+    <div class="cat-card words" tabindex="0" role="button" aria-label="Practice words" onclick="startCategory('words')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();startCategory('words');}">
       <span class="cat-icon">🐱</span>
       <div class="cat-name">Words</div>
       <div class="cat-desc">Simple everyday words</div>
       <span class="cat-badge">10 words</span>
     </div>
-    <div class="cat-card phrases" onclick="startCategory('phrases')">
+    <div class="cat-card phrases" tabindex="0" role="button" aria-label="Practice phrases" onclick="startCategory('phrases')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();startCategory('phrases');}">
       <span class="cat-icon">💬</span>
       <div class="cat-name">Phrases</div>
       <div class="cat-desc">Daily greetings &amp; phrases</div>
@@ -302,7 +303,7 @@ body{font-family: 'Segoe UI', 'Trebuchet MS', Arial, sans-serif;min-height:100vh
     <div class="wave-bar wb5"></div>
   </div>
 
-  <div class="status-bar" id="status-bar">
+  <div class="status-bar" id="status-bar" role="status" aria-live="polite">
     👆 Press Listen first, then say the word!
   </div>
 </div>
@@ -998,6 +999,46 @@ function testMicrophone(){
     statusEl.textContent = '⚠️ Unable to start microphone test. Please check browser permissions.';
   }
 }
+
+// ══════════════════════════════
+//  KEYBOARD ACCESSIBILITY
+// ══════════════════════════════
+window.addEventListener('keydown', (e) => {
+  if(e.target && ['input','textarea'].includes(e.target.tagName.toLowerCase())) return;
+
+  const overlay = document.getElementById('overlay');
+  const isOverlayOpen = overlay && overlay.classList.contains('show');
+
+  if(isOverlayOpen){
+    if(e.key === 'Enter' || e.key === 'ArrowRight'){
+      e.preventDefault();
+      nextWord();
+    } else if(e.key === 'r' || e.key === 'R'){
+      e.preventDefault();
+      retryWord();
+    } else if(e.key === 'Escape'){
+      e.preventDefault();
+      retryWord();
+    }
+    return;
+  }
+
+  const practicePage = document.getElementById('page-practice');
+  const isPracticeActive = practicePage && practicePage.classList.contains('active');
+
+  if(isPracticeActive){
+    if(e.key === ' '){
+      e.preventDefault();
+      toggleSpeech();
+    } else if(e.key === 'l' || e.key === 'L'){
+      e.preventDefault();
+      playWord();
+    } else if(e.key === 'Escape'){
+      e.preventDefault();
+      goHome();
+    }
+  }
+});
 </script>
 </body>
 </html>
