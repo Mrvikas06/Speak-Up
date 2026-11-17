@@ -315,6 +315,23 @@ function loadWord() {
     }
   }
 
+  // Mouth positioning guide
+  const coachBox = document.getElementById('w-coach-box');
+  const coachIcon = document.getElementById('w-coach-icon');
+  const coachShape = document.getElementById('w-coach-shape');
+  const coachTip = document.getElementById('w-coach-tip');
+  if (coachBox && coachShape && coachTip && typeof getArticulationGuide === 'function') {
+    const guide = getArticulationGuide(it.word);
+    if (guide) {
+      if (coachIcon) coachIcon.textContent = guide.emoji || '👄';
+      coachShape.textContent = guide.mouthShape || 'Mouth Shape';
+      coachTip.textContent = guide.tongueTip || guide.cues || '';
+      coachBox.style.display = 'flex';
+    } else {
+      coachBox.style.display = 'none';
+    }
+  }
+
   refreshDots();
 
   const sb = document.getElementById('speak-btn');
@@ -337,6 +354,18 @@ function playWord(isSlow = false) {
     () => setStatus('🎤 Now your turn! Press Speak!', ''),
     isSlow
   );
+}
+
+function teachWord() {
+  if (!items[idx]) return;
+  if (typeof playClickSound === 'function') playClickSound();
+  if (typeof generateLessonSpeech === 'function' && typeof speakText === 'function') {
+    const lesson = generateLessonSpeech(items[idx]);
+    speakText(lesson, false);
+    setStatus('🎓 Teacher: ' + (items[idx].hint || items[idx].word), 'listening');
+  } else {
+    playWord(true);
+  }
 }
 
 function playSyllable(syl) {
@@ -523,7 +552,7 @@ function handleCorrect(said, evalResult) {
   const praises = ['Amazing! 🎉', 'Wonderful! ✨', 'Great job! 🌟', 'Superstar! ⭐', 'You did it! 🎊', 'Brilliant! 🌈', 'Perfect! 💫'];
   const praise = (evalResult && evalResult.feedback) || praises[Math.floor(Math.random() * praises.length)];
   const isLast = idx >= items.length - 1;
-  showOverlay(starsDisplay, '🎉', praise, 'ok', `You said: "${said}"`, isLast ? '🏆 Finish!' : 'Next Word →');
+  showOverlay(starsDisplay, '🎉', praise, 'ok', `You said: "${said}"`, isLast ? '🏆 Finish!' : 'Next Word →', null);
 }
 
 function handleWrong(said, evalResult) {
@@ -534,14 +563,18 @@ function handleWrong(said, evalResult) {
     setTimeout(() => card.classList.remove('shake'), 600);
   }
   const target = items[idx].word;
+  let tutorAdvice = null;
+  if (said && typeof diagnoseSpeechError === 'function') {
+    tutorAdvice = diagnoseSpeechError(target, said);
+  }
   const msg = !said
     ? `I didn't hear anything. Say "${target}" LOUDLY!`
     : (evalResult && evalResult.feedback) || `I heard "${said}". Say "${target}" more clearly!`;
 
-  showOverlay('⭐', '😊', 'Keep Trying!', 'ng', msg, 'Skip →');
+  showOverlay('⭐', '😊', 'Keep Trying!', 'ng', msg, 'Skip →', tutorAdvice);
 }
 
-function showOverlay(stars, icon, title, cls, msg, nextTxt) {
+function showOverlay(stars, icon, title, cls, msg, nextTxt, tutorAdvice) {
   const starsEl = document.getElementById('r-stars');
   if (starsEl) starsEl.textContent = stars || '⭐';
   document.getElementById('r-icon').textContent = icon;
@@ -549,6 +582,18 @@ function showOverlay(stars, icon, title, cls, msg, nextTxt) {
   document.getElementById('r-title').className = 'result-title ' + cls;
   document.getElementById('r-said').textContent = msg;
   document.getElementById('r-next').textContent = nextTxt;
+
+  const tutorBox = document.getElementById('r-tutor-box');
+  const tutorMsg = document.getElementById('r-tutor-msg');
+  if (tutorBox && tutorMsg) {
+    if (tutorAdvice && tutorAdvice.coaching) {
+      tutorMsg.textContent = `${tutorAdvice.emoji || '💡'} ${tutorAdvice.coaching}`;
+      tutorBox.style.display = 'block';
+    } else {
+      tutorBox.style.display = 'none';
+    }
+  }
+
   document.getElementById('overlay').classList.add('show');
 }
 

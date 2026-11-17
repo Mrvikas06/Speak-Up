@@ -110,11 +110,19 @@
       <span class="sentence-text" id="w-sentence"></span>
       <span class="sentence-play">🔊</span>
     </div>
+    <div class="coach-box" id="w-coach-box" style="display:none;" title="Articulatory Mouth &amp; Tongue Guide">
+      <span class="coach-mouth-icon" id="w-coach-icon">👄</span>
+      <div class="coach-mouth-info">
+        <span class="coach-shape" id="w-coach-shape">Mouth Shape</span>
+        <span class="coach-tip" id="w-coach-tip">Tongue Position</span>
+      </div>
+    </div>
   </div>
 
   <div class="action-row">
     <button class="action-btn listen-btn" id="listen-btn" onclick="playWord(false)">🔊 Listen</button>
     <button class="action-btn slow-btn" id="slow-btn" onclick="playWord(true)">🐢 Slow</button>
+    <button class="action-btn coach-btn" id="coach-btn" onclick="teachWord()" title="Listen to AI teacher explanation">🎓 Teach</button>
     <button class="action-btn speak-btn" id="speak-btn" onclick="toggleSpeech()">🎤 Speak</button>
   </div>
 
@@ -138,6 +146,10 @@
     <span class="result-icon" id="r-icon">🎉</span>
     <div class="result-title" id="r-title">Amazing!</div>
     <div class="result-said" id="r-said">You said it perfectly!</div>
+    <div class="tutor-advice-box" id="r-tutor-box" style="display:none;">
+      <div class="tutor-tag">🎓 AI Speech Coach</div>
+      <div class="tutor-msg" id="r-tutor-msg"></div>
+    </div>
     <button class="res-btn next" id="r-next" onclick="nextWord()">Next Word →</button>
     <button class="res-btn retry" onclick="retryWord()">🔄 Try Again</button>
   </div>
@@ -185,6 +197,7 @@
 <script src="js/data.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/speech.js"></script>
+<script src="js/tutor.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
