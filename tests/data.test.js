@@ -1,47 +1,51 @@
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { CATS } = require('../js/data.js');
+const { CATS, CATEGORY_META } = require('../js/data.js');
 
-describe('Data Integrity Tests', () => {
-  test('CATS object contains required categories', () => {
-    assert.ok(CATS.vowels, 'vowels category must exist');
-    assert.ok(CATS.words, 'words category must exist');
-    assert.ok(CATS.phrases, 'phrases category must exist');
-  });
+describe('Data Integrity & Curriculum Tests', () => {
+  test('CATEGORY_META matches all CATS categories', () => {
+    const catsKeys = Object.keys(CATS);
+    const metaKeys = Object.keys(CATEGORY_META);
+    assert.deepEqual(catsKeys.sort(), metaKeys.sort());
 
-  test('vowels category contains valid items', () => {
-    assert.equal(CATS.vowels.length, 5, 'should have 5 vowels');
-    const vowelWords = CATS.vowels.map(v => v.word);
-    assert.deepEqual(vowelWords, ['A', 'E', 'I', 'O', 'U']);
-
-    CATS.vowels.forEach(item => {
-      assert.ok(item.word, 'item must have word');
-      assert.ok(item.emoji, 'item must have emoji');
-      assert.ok(item.hint, 'item must have hint');
-      assert.ok(item.speak, 'vowel item must have speak pronunciation');
-      assert.ok(Array.isArray(item.aliases), 'item should have aliases array');
+    metaKeys.forEach(key => {
+      const meta = CATEGORY_META[key];
+      assert.ok(meta.title, `meta for ${key} must have title`);
+      assert.ok(meta.icon, `meta for ${key} must have icon`);
+      assert.ok(meta.desc, `meta for ${key} must have desc`);
+      assert.ok(meta.badge, `meta for ${key} must have badge`);
+      assert.ok(['beginner', 'intermediate', 'advanced'].includes(meta.level), `meta level invalid for ${key}`);
     });
   });
 
-  test('words category contains valid items', () => {
-    assert.equal(CATS.words.length, 10, 'should have 10 words');
-    CATS.words.forEach(item => {
-      assert.ok(item.word, 'item must have word');
-      assert.ok(item.emoji, 'item must have emoji');
-      assert.ok(item.hint, 'item must have hint');
+  test('all categories contain non-empty arrays with full pedagogical properties', () => {
+    Object.keys(CATS).forEach(cat => {
+      const items = CATS[cat];
+      assert.ok(items.length > 0, `category ${cat} should have items`);
+
+      items.forEach(item => {
+        assert.ok(item.word, `${cat} item must have word`);
+        assert.ok(item.emoji, `${cat} item must have emoji`);
+        assert.ok(item.hint, `${cat} item must have hint`);
+        assert.ok(item.phonics, `${cat} item must have phonics: ${item.word}`);
+        assert.ok(Array.isArray(item.syllables) && item.syllables.length > 0, `${cat} item must have syllables: ${item.word}`);
+        assert.ok(item.sentence, `${cat} item must have example sentence: ${item.word}`);
+      });
     });
   });
 
-  test('phrases category contains valid items', () => {
-    assert.equal(CATS.phrases.length, 6, 'should have 6 phrases');
-    CATS.phrases.forEach(item => {
-      assert.ok(item.word, 'item must have word');
-      assert.ok(item.emoji, 'item must have emoji');
-      assert.ok(item.hint, 'item must have hint');
-    });
+  test('alphabet has all 26 letters', () => {
+    assert.equal(CATS.alphabet.length, 26);
+    const letters = CATS.alphabet.map(i => i.word);
+    const expected = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    assert.deepEqual(letters, expected);
   });
 
-  test('no duplicate words within categories', () => {
+  test('numbers has 10 items (One to Ten)', () => {
+    assert.equal(CATS.numbers.length, 10);
+  });
+
+  test('no duplicate words within any category', () => {
     Object.keys(CATS).forEach(cat => {
       const words = CATS[cat].map(i => i.word.toLowerCase());
       const unique = new Set(words);
