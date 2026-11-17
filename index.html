@@ -193,9 +193,22 @@ body{font-family: 'Segoe UI', 'Trebuchet MS', Arial, sans-serif;min-height:100vh
 .mic-test-status.listening{background:#E8F6FF;color:#1460A0;border:2px solid var(--blue)}
 .mic-test-status.success{background:#EAFFF0;color:#1E7840;border:2px solid var(--green)}
 .mic-test-status.error{background:#FFEAEA;color:#A01414;border:2px solid var(--coral)}
+
+/* Top navigation */
+.top-nav{position:fixed;top:1rem;right:1rem;z-index:90;display:flex;gap:8px}
+.nav-toggle-btn{background:var(--white);border:2px solid #E2DFF5;border-radius:14px;padding:7px 14px;
+  font-family:inherit;font-size:.85rem;font-weight:700;color:var(--dark);cursor:pointer;
+  box-shadow:0 3px 10px rgba(0,0,0,.06);transition:all .2s;user-select:none}
+.nav-toggle-btn:hover{background:#F7F5FF;border-color:var(--purple);transform:translateY(-1px)}
+.nav-toggle-btn:active{transform:scale(.97)}
 </style>
 </head>
 <body>
+
+<!-- Top Navigation -->
+<div class="top-nav">
+  <button id="sound-toggle-btn" class="nav-toggle-btn" onclick="toggleSound()" aria-label="Toggle sound effects">🔊 Sound: ON</button>
+</div>
 
 <!-- Bubbles -->
 <div class="bubbles" id="bubbles"></div>
@@ -372,6 +385,74 @@ const CATS = {
 let items=[], idx=0, score=0, recog=null, isRec=false;
 
 // ══════════════════════════════
+//  AUDIO SYNTHESIZER (SFX)
+// ══════════════════════════════
+let soundEnabled = true;
+let sfxAudioContext = null;
+
+function getAudioContext(){
+  if(!sfxAudioContext && (window.AudioContext || window.webkitAudioContext)){
+    sfxAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(sfxAudioContext && sfxAudioContext.state === 'suspended'){
+    sfxAudioContext.resume();
+  }
+  return sfxAudioContext;
+}
+
+function playTone(freq, duration, type='sine', gain=0.15, offset=0){
+  if(!soundEnabled) return;
+  try {
+    const ctx = getAudioContext();
+    if(!ctx) return;
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    osc.type = type;
+    const now = ctx.currentTime + offset;
+    osc.frequency.setValueAtTime(freq, now);
+    gainNode.gain.setValueAtTime(gain, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + duration);
+  } catch(e){}
+}
+
+function playCorrectSound(){
+  playTone(523.25, 0.15, 'triangle', 0.18, 0);
+  playTone(659.25, 0.18, 'triangle', 0.20, 0.08);
+  playTone(783.99, 0.22, 'triangle', 0.22, 0.16);
+  playTone(1046.5, 0.35, 'triangle', 0.25, 0.24);
+}
+
+function playWrongSound(){
+  playTone(330, 0.18, 'sine', 0.14, 0);
+  playTone(261.6, 0.28, 'sine', 0.14, 0.14);
+}
+
+function playClickSound(){
+  playTone(800, 0.05, 'triangle', 0.08, 0);
+}
+
+function playCompleteSound(){
+  const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+  notes.forEach((freq, i) => {
+    playTone(freq, 0.35, 'triangle', 0.18, i * 0.1);
+  });
+}
+
+function toggleSound(){
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById('sound-toggle-btn');
+  if(btn){
+    btn.innerHTML = soundEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+    btn.setAttribute('aria-label', soundEnabled ? 'Mute sound effects' : 'Unmute sound effects');
+  }
+  if(soundEnabled) playClickSound();
+}
+
+// ══════════════════════════════
 //  BUBBLES
 // ══════════════════════════════
 (()=>{
@@ -395,6 +476,7 @@ function showPage(id){
   document.getElementById(id).classList.add('active');
 }
 function goHome(){
+  playClickSound();
   stopRec();
   if('speechSynthesis' in window){
     speechSynthesis.cancel();
@@ -411,6 +493,7 @@ function goHome(){
 //  CATEGORY START
 // ══════════════════════════════
 function startCategory(cat){
+  playClickSound();
   items=[...CATS[cat]];
   // shuffle
   for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}
@@ -696,6 +779,7 @@ function levenshtein(a,b){
 //  FEEDBACK
 // ══════════════════════════════
 function handleCorrect(said){
+  playCorrectSound();
   score++;
   document.getElementById('score-val').textContent=score;
   spawnConfetti();
@@ -708,6 +792,7 @@ function handleCorrect(said){
   console.log('Correct! Score is now:',score);
 }
 function handleWrong(said){
+  playWrongSound();
   const card=document.getElementById('word-card');
   card.classList.add('shake');
   setTimeout(()=>card.classList.remove('shake'),600);
@@ -734,6 +819,7 @@ function showOverlay(icon,title,cls,msg,nextTxt){
 }
 
 function nextWord(){
+  playClickSound();
   document.getElementById('overlay').classList.remove('show');
   idx++;
   if(idx>=items.length){
@@ -744,6 +830,7 @@ function nextWord(){
   }
 }
 function retryWord(){
+  playClickSound();
   document.getElementById('overlay').classList.remove('show');
   loadWord();
 }
@@ -752,6 +839,7 @@ function retryWord(){
 //  COMPLETE SCREEN
 // ══════════════════════════════
 function showComplete(){
+  playCompleteSound();
   const total=items.length;
   const pct=total>0?Math.round(score/total*100):0;
   let icon='🏆',title='Outstanding! 🎊',sub='You\'re a superstar speaker!';
