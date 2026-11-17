@@ -1,0 +1,35 @@
+{
+  "model_version": "1.0.0",
+  "accuracy": 84.44,
+  "classes": [
+    "EXACT_MATCH",
+    "FRONTING",
+    "GLIDING",
+    "STOPPING",
+    "CLUSTER_REDUCTION",
+    "FINAL_CONSONANT_DELETION",
+    "INTERDENTAL_SUBSTITUTION",
+    "GENERAL_VARIATION"
+  ],
+  "coaching_guides": {
+    "EXACT_MATCH": "Flawless pronunciation! Every phoneme was articulated accurately.",
+    "FRONTING": "Fronting detected: you used the front of your tongue. Push air from the back of your throat: 'k-k-k'!",
+    "GLIDING": "Gliding detected: curl your tongue tip upward toward the roof of your mouth instead of rounding your lips!",
+    "STOPPING": "Stopping detected: keep the air flowing steadily through your teeth like a soft breeze without stopping it!",
+    "CLUSTER_REDUCTION": "Cluster reduction detected: make sure to pronounce both sounds in the consonant blend together!",
+    "FINAL_CONSONANT_DELETION": "Final consonant omitted: make sure to complete the word with a crisp end sound!",
+    "INTERDENTAL_SUBSTITUTION": "Interdental substitution: peek the tip of your tongue gently between your front teeth and blow!",
+    "GENERAL_VARIATION": "Phonetic variation heard: listen to the model pronunciation and repeat slowly."
+  },
+  "vocabulary_size": 439,
+  "priors": {
+    "EXACT_MATCH": 0.3922,
+    "FRONTING": 0.0616,
+    "GLIDING": 0.084,
+    "STOPPING": 0.0364,
+    "CLUSTER_REDUCTION": 0.0336,
+    "FINAL_CONSONANT_DELETION": 0.1148,
+    "INTERDENTAL_SUBSTITUTION": 0.0112,
+    "GENERAL_VARIATION": 0.2661
+  }
+}
