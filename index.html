@@ -14,6 +14,7 @@
 
 <!-- Top Navigation -->
 <div class="top-nav">
+  <button id="stickers-btn" class="nav-toggle-btn" onclick="openStickerModal()" aria-label="Open Sticker Book">🏆 Stickers (<span id="sticker-count">0</span>)</button>
   <button id="sound-toggle-btn" class="nav-toggle-btn" onclick="toggleSound()" aria-label="Toggle sound effects">🔊 Sound: ON</button>
 </div>
 
@@ -165,6 +166,18 @@
       </div>
     </div>
     <button class="home-btn" onclick="goHome()">🏠 Play Again!</button>
+  </div>
+</div>
+
+<!-- ════════════════ STICKER BOOK MODAL ════════════════ -->
+<div class="overlay" id="sticker-modal" onclick="if(event.target===this)closeStickerModal()">
+  <div class="sticker-card">
+    <div class="sticker-header">
+      <h2>🏆 My Sticker Book</h2>
+      <button class="modal-close-btn" onclick="closeStickerModal()">✕</button>
+    </div>
+    <p class="sticker-sub">Practice speaking to collect badges!</p>
+    <div class="sticker-grid" id="sticker-grid"></div>
   </div>
 </div>
 

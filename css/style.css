@@ -238,3 +238,21 @@ body{
   box-shadow:0 3px 10px rgba(0,0,0,.06);transition:all .2s;user-select:none}
 .nav-toggle-btn:hover{background:#F7F5FF;border-color:var(--purple);transform:translateY(-1px)}
 .nav-toggle-btn:active{transform:scale(.97)}
+
+/* Sticker modal */
+.sticker-card{background:var(--white);border-radius:36px;padding:2rem 1.75rem;max-width:440px;width:100%;
+  animation:popIn .35s cubic-bezier(.34,1.56,.64,1);max-height:85vh;overflow-y:auto}
+.sticker-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem}
+.sticker-header h2{font-size:1.6rem;font-weight:900;color:var(--dark)}
+.modal-close-btn{background:#F0EEFF;border:none;border-radius:50%;width:34px;height:34px;font-size:1rem;
+  font-weight:900;cursor:pointer;color:var(--dark);transition:transform .15s}
+.modal-close-btn:hover{transform:scale(1.1);background:#E2DFF5}
+.sticker-sub{font-size:.9rem;font-weight:700;color:#9999BB;margin-bottom:1.25rem}
+.sticker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:.85rem}
+.sticker-item{background:#F7F5FF;border:2px solid #E4DFFE;border-radius:20px;padding:.85rem .5rem;
+  text-align:center;transition:transform .2s;position:relative}
+.sticker-item:hover{transform:translateY(-3px)}
+.sticker-item.locked{opacity:.45;filter:grayscale(1);border-style:dashed}
+.sticker-icon{font-size:2.4rem;display:block;margin-bottom:.3rem}
+.sticker-title{font-size:.78rem;font-weight:800;color:var(--dark);line-height:1.2}
+.sticker-desc{font-size:.68rem;color:#9999BB;margin-top:.2rem;font-weight:700}

@@ -12,6 +12,80 @@ let recTimeout = null;
 let testRecogInstance = null;
 let testTimeout = null;
 let currentFilter = 'all';
+let activeCategory = null;
+
+// Sticker Catalog
+const STICKERS_CATALOG = [
+  { id: 'vowels', icon: '🍎', title: 'Vowel Explorer', desc: 'Practice Vowels' },
+  { id: 'alphabet', icon: '🅰️', title: 'Alphabet Master', desc: 'Practice Alphabet' },
+  { id: 'numbers', icon: '🔢', title: 'Number Star', desc: 'Practice Numbers' },
+  { id: 'colors', icon: '🎨', title: 'Rainbow Artist', desc: 'Practice Colors' },
+  { id: 'words', icon: '🐱', title: 'Word Champion', desc: 'Practice Words' },
+  { id: 'animals', icon: '🦁', title: 'Safari Guide', desc: 'Practice Animals' },
+  { id: 'actions', icon: '🏃', title: 'Action Hero', desc: 'Practice Actions' },
+  { id: 'phrases', icon: '💬', title: 'Polite Speaker', desc: 'Practice Phrases' },
+  { id: 'twisters', icon: '🌀', title: 'Twister Wizard', desc: 'Practice Twisters' },
+  { id: 'perfect', icon: '⭐', title: 'Superstar', desc: 'Score 100% in any set' }
+];
+
+function getUnlockedStickers() {
+  try {
+    const raw = localStorage.getItem('speakup_stickers');
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function unlockSticker(id) {
+  try {
+    const unlocked = getUnlockedStickers();
+    if (!unlocked.includes(id)) {
+      unlocked.push(id);
+      localStorage.setItem('speakup_stickers', JSON.stringify(unlocked));
+      updateStickerCounter();
+    }
+  } catch (e) {}
+}
+
+function updateStickerCounter() {
+  const countEl = document.getElementById('sticker-count');
+  if (countEl) {
+    countEl.textContent = getUnlockedStickers().length;
+  }
+}
+
+function openStickerModal() {
+  if (typeof playClickSound === 'function') playClickSound();
+  renderStickers();
+  const modal = document.getElementById('sticker-modal');
+  if (modal) modal.classList.add('show');
+}
+
+function closeStickerModal() {
+  if (typeof playClickSound === 'function') playClickSound();
+  const modal = document.getElementById('sticker-modal');
+  if (modal) modal.classList.remove('show');
+}
+
+function renderStickers() {
+  const grid = document.getElementById('sticker-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const unlocked = getUnlockedStickers();
+
+  STICKERS_CATALOG.forEach(s => {
+    const isUnlocked = unlocked.includes(s.id);
+    const item = document.createElement('div');
+    item.className = 'sticker-item' + (isUnlocked ? '' : ' locked');
+    item.innerHTML = `
+      <span class="sticker-icon">${s.icon}</span>
+      <div class="sticker-title">${s.title}</div>
+      <div class="sticker-desc">${isUnlocked ? 'Unlocked!' : s.desc}</div>
+    `;
+    grid.appendChild(item);
+  });
+}
 
 // Curriculum Category Cards Rendering
 function renderCategoryCards() {
@@ -106,6 +180,7 @@ function goHome() {
 function startCategory(cat) {
   if (typeof playClickSound === 'function') playClickSound();
   if (!CATS[cat]) return;
+  activeCategory = cat;
   items = [...CATS[cat]];
 
   // Fisher-Yates shuffle
@@ -473,6 +548,13 @@ function showComplete() {
     if (bar) bar.style.width = pct + '%';
   }, 100);
 
+  if (activeCategory) {
+    unlockSticker(activeCategory);
+  }
+  if (pct === 100) {
+    unlockSticker('perfect');
+  }
+
   if (pct >= 50) {
     spawnConfetti();
     spawnStars();
@@ -608,6 +690,15 @@ function testMicrophone() {
 window.addEventListener('keydown', e => {
   if (e.target && ['input', 'textarea'].includes(e.target.tagName.toLowerCase())) return;
 
+  const stickerModal = document.getElementById('sticker-modal');
+  if (stickerModal && stickerModal.classList.contains('show')) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeStickerModal();
+      return;
+    }
+  }
+
   const overlay = document.getElementById('overlay');
   const isOverlayOpen = overlay && overlay.classList.contains('show');
 
@@ -646,6 +737,7 @@ window.addEventListener('keydown', e => {
 document.addEventListener('DOMContentLoaded', () => {
   initBubbles();
   renderCategoryCards();
+  updateStickerCounter();
   if ('speechSynthesis' in window) {
     window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
   }
