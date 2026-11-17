@@ -380,6 +380,9 @@ function showPage(id){
 }
 function goHome(){
   stopRec();
+  if('speechSynthesis' in window){
+    speechSynthesis.cancel();
+  }
   document.getElementById('overlay').classList.remove('show');
   score=0;  // Reset score when going home
   idx=0;    // Reset index when going home
@@ -459,6 +462,7 @@ function playWord(){
 // ══════════════════════════════
 //  SPEECH RECOGNITION
 // ══════════════════════════════
+let recTimeout=null;
 
 function toggleSpeech(){if(isRec)stopRec();else startRec();}
 
@@ -469,12 +473,10 @@ function startRec(){
     return;
   }
   
-  // Create recognizer ONCE if not exists
   if(!recog){
     initRecognition();
   }
   
-  // Just start it (don't reinit)
   try{
     isRec=true;
     recog.start();
@@ -492,23 +494,22 @@ function startRec(){
     recog.maxAlternatives=1;
     
     let speechDetected=false;
-    let timeout;
 
     recog.onstart=()=>{
       isRec=true;
       speechDetected=false;
-      clearTimeout(timeout);
+      if(recTimeout) clearTimeout(recTimeout);
       
       const btn=document.getElementById('speak-btn');
       btn.classList.add('recording');
-      btn.disabled=true;
-      btn.innerHTML='⏹ STOP';
+      btn.disabled=false;
+      btn.innerHTML='⏹ Stop';
       document.getElementById('mic-wave').classList.add('active');
       setStatus('🔴 LISTENING... speak anytime in the next 30 seconds!','listening');
       console.log('🎤 Started listening - you have 30 seconds to speak');
       
-      // Very long timeout - 30 seconds
-      timeout=setTimeout(()=>{
+      // Safety timeout - 30 seconds
+      recTimeout=setTimeout(()=>{
         console.log('⏱️ Final timeout: 30 seconds elapsed');
         stopRec();
         if(!speechDetected){
@@ -518,7 +519,7 @@ function startRec(){
     };
 
     recog.onresult=e=>{
-      clearTimeout(timeout);
+      if(recTimeout) clearTimeout(recTimeout);
       let interimText='';
       let finalText='';
       
@@ -603,14 +604,16 @@ function startRec(){
         console.log('Critical error - stopping recognition');
         stopRec();
       }
-      // No-speech error: this happens when no sound detected. Restart to keep listening
+      // No-speech error: this happens when no sound detected. Restart if still recording
       else if(e.error==='no-speech'){
-        console.log('No-speech detected. Restarting listening...');
+        console.log('No-speech detected. Checking restart...');
+        if(!isRec) return;
         try{
-          recog.abort();  // Cleanly abort first
+          recog.abort();
           setTimeout(()=>{
-            console.log('Calling recog.start() again');
-            recog.start();
+            if(isRec && recog){
+              try{recog.start();}catch(err){}
+            }
           },100);
         }catch(err){
           console.error('Error restarting:',err);
@@ -619,22 +622,30 @@ function startRec(){
     };
 
     recog.onend=()=>{
-      clearTimeout(timeout);
+      if(recTimeout) clearTimeout(recTimeout);
       isRec=false;
-      document.getElementById('mic-wave').classList.remove('active');
+      const wave=document.getElementById('mic-wave');
+      if(wave) wave.classList.remove('active');
       console.log('Recording stopped');
     };
   }
 }
 
 function stopRec(){
-  if(recog){try{recog.stop();}catch(e){}}
+  if(recTimeout){
+    clearTimeout(recTimeout);
+    recTimeout=null;
+  }
   isRec=false;
+  if(recog){try{recog.stop();}catch(e){}}
   const btn=document.getElementById('speak-btn');
-  btn.classList.remove('recording');
-  btn.disabled=false;
-  btn.innerHTML='🎤 Speak';
-  document.getElementById('mic-wave').classList.remove('active');
+  if(btn){
+    btn.classList.remove('recording');
+    btn.disabled=false;
+    btn.innerHTML='🎤 Speak';
+  }
+  const wave=document.getElementById('mic-wave');
+  if(wave) wave.classList.remove('active');
   console.log('Recording stopped');
 }
 
