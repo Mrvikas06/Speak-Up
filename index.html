@@ -178,6 +178,21 @@ body{font-family: 'Segoe UI', 'Trebuchet MS', Arial, sans-serif;min-height:100vh
 @keyframes waveAnim{0%{height:8px}100%{height:28px}}
 .wb1{animation-delay:0s}.wb2{animation-delay:.1s}.wb3{animation-delay:.2s}
 .wb4{animation-delay:.1s}.wb5{animation-delay:0s}
+
+/* Mic test section */
+.mic-test-section{text-align:center;margin-bottom:1.5rem;width:100%;max-width:500px}
+.mic-test-btn{background:var(--pink);border:none;border-radius:16px;padding:.75rem 1.6rem;
+  font-family: 'Segoe UI', 'Trebuchet MS', Arial, sans-serif;font-size:1rem;font-weight:700;
+  cursor:pointer;color:var(--white);box-shadow:0 4px 14px rgba(255,142,212,.35);
+  transition:transform .2s,box-shadow .2s}
+.mic-test-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(255,142,212,.45)}
+.mic-test-btn:active{transform:scale(.97)}
+.mic-test-btn:disabled{opacity:.6;cursor:wait}
+.mic-test-status{margin-top:.75rem;padding:.75rem 1.25rem;border-radius:14px;font-size:.92rem;
+  font-weight:700;transition:all .3s;line-height:1.4}
+.mic-test-status.listening{background:#E8F6FF;color:#1460A0;border:2px solid var(--blue)}
+.mic-test-status.success{background:#EAFFF0;color:#1E7840;border:2px solid var(--green)}
+.mic-test-status.error{background:#FFEAEA;color:#A01414;border:2px solid var(--coral)}
 </style>
 </head>
 <body>
@@ -218,10 +233,11 @@ body{font-family: 'Segoe UI', 'Trebuchet MS', Arial, sans-serif;min-height:100vh
 
   <p class="section-label">Choose a category to start:</p>
 
-  <div style="text-align:center;margin-bottom:1.5rem">
-    <button onclick="testMicrophone()" style="background:#FF8ED4;border:none;border-radius:14px;padding:0.7rem 1.5rem;font-family:'Fredoka One';font-size:0.95rem;cursor:pointer;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+  <div class="mic-test-section">
+    <button id="mic-test-btn" class="mic-test-btn" onclick="testMicrophone()">
       🎤 Test Microphone First
     </button>
+    <div id="mic-test-status" class="mic-test-status" style="display:none;"></div>
   </div>
 
   <div class="cats">
@@ -804,97 +820,94 @@ window.speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
 // ══════════════════════════════
 //  MICROPHONE TEST
 // ══════════════════════════════
+let testRecogInstance = null;
+let testTimeout = null;
+
 function testMicrophone(){
-  console.log('Starting mic test...');
-  
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const statusEl = document.getElementById('mic-test-status');
+  const btn = document.getElementById('mic-test-btn');
+  if(!statusEl) return;
+
+  statusEl.style.display = 'block';
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR){
-    alert('❌ Your browser does not support speech recognition.\n\nUse: Chrome, Edge, or Safari');
+    statusEl.className = 'mic-test-status error';
+    statusEl.textContent = '❌ Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.';
     return;
   }
-  
-  let testRecog=new SR();
-  testRecog.lang='en-US';
-  testRecog.continuous=true;
-  testRecog.interimResults=true;
-  
-  let heardSomething=false;
-  let timeout;
-  let testComplete=false;
-  
-  // Show testing message
-  setStatus('🎤 Testing microphone... SPEAK LOUD & CLEAR!','listening');
-  
-  testRecog.onstart=()=>{
-    console.log('🎤 Test started - SPEAK NOW INTO YOUR MICROPHONE!');
-    setStatus('🔴 LISTENING... Say hello, cat, or anything!','listening');
-    // Give 10 seconds to speak
-    timeout=setTimeout(()=>{
-      if(!testComplete && !heardSomething){
-        console.log('⏱️ Timeout: No speech detected');
-        testComplete=true;
-        try{testRecog.abort();}catch(e){}
-        setStatus('❌ No sound detected. Check your microphone!','wrong');
-        alert('❌ MICROPHONE TEST FAILED\n\nNo sound detected.\n\nFix:\n1. Check microphone is plugged in\n2. Check volume is not muted\n3. Try another app (Discord/Zoom) to test\n4. Move closer to the microphone\n5. Refresh this page and try again');
+
+  if(testRecogInstance){
+    try{ testRecogInstance.abort(); }catch(e){}
+    testRecogInstance = null;
+  }
+  if(testTimeout){
+    clearTimeout(testTimeout);
+    testTimeout = null;
+  }
+
+  statusEl.className = 'mic-test-status listening';
+  statusEl.textContent = '🔴 Listening... Say "Hello", "Cat", or any word loudly!';
+  if(btn) btn.disabled = true;
+
+  try {
+    testRecogInstance = new SR();
+    testRecogInstance.lang = 'en-US';
+    testRecogInstance.continuous = false;
+    testRecogInstance.interimResults = true;
+
+    let heardWord = '';
+
+    testTimeout = setTimeout(()=>{
+      if(testRecogInstance){
+        try{ testRecogInstance.abort(); }catch(e){}
       }
-    },10000);
-  };
-  
-  testRecog.onresult=e=>{
-    if(testComplete)return;
-    
-    let bestTranscript='';
-    for(let i=0;i<e.results.length;i++){
-      const t=e.results[i][0].transcript.trim();
-      if(t.length>0){
-        if(e.results[i].isFinal){
-          bestTranscript=t;
+      if(btn) btn.disabled = false;
+      if(!heardWord){
+        statusEl.className = 'mic-test-status error';
+        statusEl.textContent = '⏱️ No sound detected. Please check microphone volume and permissions, then try again!';
+      }
+    }, 10000);
+
+    testRecogInstance.onresult = (e)=>{
+      for(let i = 0; i < e.results.length; i++){
+        const t = e.results[i][0].transcript.trim();
+        if(t){
+          heardWord = t;
         }
       }
-    }
-    
-    if(bestTranscript){
-      heardSomething=true;
-      console.log('✅ Heard:',bestTranscript);
-      testComplete=true;
-      clearTimeout(timeout);
-      try{testRecog.abort();}catch(e){}
-      setStatus('✅ Microphone works! Heard: "'+bestTranscript+'"','correct');
-      alert('✅ SUCCESS!\n\nYour microphone is working!\n\nHeard: "'+bestTranscript+'"\n\nNow try the speech practice app!');
-    }
-  };
-  
-  testRecog.onerror=e=>{
-    if(testComplete)return;
-    
-    console.error('Test error:',e.error);
-    testComplete=true;
-    clearTimeout(timeout);
-    try{testRecog.abort();}catch(err){}
-    
-    const msgs={
-      'no-speech':'❌ No speech detected - SPEAK LOUDER',
-      'aborted':'⚠️ Test stopped - try again',
-      'not-allowed':'❌ Microphone access denied',
-      'audio-capture':'❌ No microphone found',
-      'network':'❌ Network error',
-      'service-not-allowed':'❌ Mic blocked'
+      if(heardWord){
+        statusEl.className = 'mic-test-status success';
+        statusEl.textContent = `✅ Microphone works! Heard: "${heardWord}"`;
+        if(testTimeout) clearTimeout(testTimeout);
+        if(btn) btn.disabled = false;
+        try{ testRecogInstance.stop(); }catch(err){}
+      }
     };
-    const msg=msgs[e.error]||'❌ Error: '+e.error;
-    setStatus(msg,'wrong');
-    
-    if(e.error==='aborted'){
-      alert('⚠️ TEST WAS INTERRUPTED\n\nPlease try again:\n1. Click the test button again\n2. Speak clearly when it says "LISTENING"\n3. Wait for the result');
-    }else{
-      alert('🚫 MICROPHONE PROBLEM\n\nError: '+msg+'\n\nFix:\n1. Grant microphone permission when asked\n2. Check browser settings\n3. Try a different browser\n4. Refresh the page');
-    }
-  };
-  
-  try{
-    testRecog.start();
-  }catch(err){
-    console.error('Test start failed:',err);
-    alert('Failed to start test. Refresh page and try again.');
+
+    testRecogInstance.onerror = (e)=>{
+      if(testTimeout) clearTimeout(testTimeout);
+      if(btn) btn.disabled = false;
+      statusEl.className = 'mic-test-status error';
+      if(e.error === 'not-allowed'){
+        statusEl.textContent = '🚫 Microphone permission denied. Please allow microphone access in your browser settings.';
+      } else if(e.error === 'no-speech'){
+        statusEl.textContent = '🔊 No speech detected. Please speak louder into your microphone!';
+      } else {
+        statusEl.textContent = `⚠️ Microphone notice (${e.error}). Ensure your mic is connected and try again.`;
+      }
+    };
+
+    testRecogInstance.onend = ()=>{
+      if(btn) btn.disabled = false;
+    };
+
+    testRecogInstance.start();
+  } catch(err) {
+    if(testTimeout) clearTimeout(testTimeout);
+    if(btn) btn.disabled = false;
+    statusEl.className = 'mic-test-status error';
+    statusEl.textContent = '⚠️ Unable to start microphone test. Please check browser permissions.';
   }
 }
 </script>
