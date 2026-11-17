@@ -1,173 +1,177 @@
-# 🌟 SpeakUp! - Speech Practice for Kids
-# https://mrvikas06.github.io/Speakup/
+# SpeakUp
 
-A fun, interactive app that helps kids practice speaking with real-time speech recognition!
+SpeakUp is a browser-based speech practice and pronunciation learning application designed for children. The application leverages the Web Speech API (SpeechRecognition and SpeechSynthesis) alongside the Web Audio API to deliver real-time speech evaluation, audio pronunciation playback, and interactive feedback without requiring external backend servers.
 
-## 🚀 How to Open
+## Table of Contents
 
-**Option 1: Drag & Drop (Easiest)**
-1. Open your web browser (Chrome, Edge, or Safari)
-2. Open your File Explorer
-3. Find `speakup.html` in your Documents folder
-4. Drag it directly into your browser window
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Technology Stack](#technology-stack)
+- [Architecture Overview](#architecture-overview)
+- [Project Structure](#project-structure)
+- [Installation and Setup](#installation-and-setup)
+- [Usage Instructions](#usage-instructions)
+- [Keyboard Navigation](#keyboard-navigation)
+- [Speech Evaluation Algorithm](#speech-evaluation-algorithm)
+- [Browser Compatibility](#browser-compatibility)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
 
-**Option 2: Right-click Open**
-1. Find `speakup.html` in your Documents folder
-2. Right-click `speakup.html`
-3. Select **Open with → Chrome** (or your preferred browser)
+## Overview
 
-**Option 3: Copy the File Path**
-- Right-click `speakup.html` and select **Copy as path**
-- Paste in your browser address bar
-- Press Enter
+SpeakUp provides structured speech practice across three core categories: Vowels, Common Words, and Everyday Phrases. Users listen to accurate pronunciations and practice speaking into their microphone. The app evaluates spoken input using a multi-strategy matching pipeline combining phonetic alias mapping, normalized token matching, and Levenshtein edit distance calculations.
 
----
+## Key Features
 
-## ✨ Features
+- Real-Time Speech Recognition: Evaluates verbal pronunciations through standard browser SpeechRecognition interfaces.
+- Clear Audio Playback: Uses the browser SpeechSynthesis engine with pitch and rate adjustments tuned for early language learners.
+- Web Audio Synthesizer: Generates dynamic audio cues (success chimes, try-again indicators, button clicks, and completion chords) via native oscillators without external audio asset downloads.
+- Inline Microphone Diagnostic: Dedicated on-page diagnostic utility allows users to verify hardware connectivity and browser permissions prior to beginning practice sessions.
+- Multi-Strategy Matching: Resilient matching engine accounts for single-letter phonetic transcriptions (e.g., vowels), contractions, phrase aliases, and close acoustic approximations.
+- Full Keyboard Accessibility: Keyboard shortcuts enable navigation and practice control without mouse dependency.
+- Zero External Runtime Dependencies: Self-contained static web application capable of running locally or deployed to any static host.
+- Comprehensive Test Coverage: Unit tests validate category datasets, Levenshtein distance metrics, and speech matching algorithms using the Node.js native test runner.
 
-- 🎵 **Audio Playback** - Hear the word pronounced clearly
-- 🎤 **Speech Recognition** - The app listens to what you say
-- ⭐ **Score Tracking** - Earn points for correct pronunciation
-- 🎉 **Celebration Effects** - Confetti and stars when you succeed
-- 📊 **Progress Dashboard** - See your performance at the end
+## Technology Stack
 
----
+- Frontend: HTML5, CSS3, JavaScript (ES2022)
+- Audio and Speech APIs: Web Speech API (SpeechRecognition, SpeechSynthesis), Web Audio API (AudioContext, OscillatorNode, GainNode)
+- Testing Framework: Node.js native test runner (`node:test`, `node:assert/strict`)
+- Tooling: Node.js (syntax verification and test execution)
 
-## 📚 Three Practice Levels
+## Architecture Overview
 
-### 1️⃣ **Vowels** (5 items)
-Practice the basic sounds: A, E, I, O, U
+The application follows a modular client-side architecture:
 
-### 2️⃣ **Words** (10 items)
-Learn simple everyday words like Cat, Dog, Ball, Sun, Tree, Fish, Bird, Star, Moon, Rain
+1. View Layer (`index.html`, `css/style.css`): Semantic HTML structure managing the Home, Practice, Result Overlay, and Completion screens with responsive layouts and CSS transitions.
+2. Data Layer (`js/data.js`): Declarative data store defining practice sets, emojis, child-friendly hints, phonetic pronunciations, and accepted aliases.
+3. Audio Synthesis Layer (`js/audio.js`): Pure Web Audio API tone generator creating feedback sounds and managing user sound preferences.
+4. Speech Processing Layer (`js/speech.js`): Interfaces with browser speech synthesis and recognition engines, implementing text normalization and Levenshtein distance evaluation.
+5. Application Controller (`js/app.js`): Coordinates application state, DOM event listeners, navigation routing, particle visual effects, and microphone diagnostic routines.
 
-### 3️⃣ **Phrases** (6 items)
-Master common phrases like Hello, Thank you, Good morning, I love you, Please, Sorry
+## Project Structure
 
----
+```
+Speakup/
+├── css/
+│   └── style.css            # Responsive layout and application stylesheets
+├── js/
+│   ├── app.js               # Main application controller and UI state management
+│   ├── audio.js             # Web Audio API sound effects synthesizer
+│   ├── data.js              # Practice categories, words, and phonetic aliases
+│   └── speech.js            # Speech recognition, speech synthesis, and match algorithms
+├── tests/
+│   ├── data.test.js         # Dataset validation and structure tests
+│   ├── levenshtein.test.js  # String metric algorithm unit tests
+│   └── matching.test.js     # Speech recognition matching and alias tests
+├── favicon.svg              # Scalable vector application icon
+├── index.html               # Main application entry point
+├── manifest.json            # Web App Manifest for progressive web capabilities
+├── package.json             # Project metadata, test scripts, and repository details
+└── README.md                # Project documentation
+```
 
-## 🎮 How to Play
+## Installation and Setup
 
-1. **Open the app** using one of the methods above
-2. **Click 🎤 Test Microphone First** to check your mic works
-3. **Pick a category** (Vowels, Words, or Phrases)
-4. **Click 🔊 Listen** to hear the word
-5. **Click 🎤 Speak** and say the word clearly into your microphone
-6. **The app will check** if you said it correctly
-7. **Get points** for correct pronunciation
-8. **See your final score** at the end
+### Prerequisites
 
----
+- A modern web browser supporting the Web Speech API (Google Chrome, Microsoft Edge, or Apple Safari).
+- Node.js (version 18 or newer) is optional, required only for running automated test suites.
 
-## 🔊 Microphone Troubleshooting
+### Running Locally
 
-### ❌ "No sound detected" or "Didn't hear you"
+Option 1: Direct Browser Launch
+Open `index.html` directly in your browser:
+- Double-click `index.html` in your file explorer, or
+- Drag and drop `index.html` into an open browser window.
 
-**Fix 1: Speak LOUDER and CLEARER**
-- Don't whisper - use your normal speaking voice or louder
-- Pronounce each letter/word clearly
-- Try different distances from your mic
+Option 2: Local HTTP Server
+```bash
+# Using Python 3 built-in server
+python -m http.server 8000
 
-**Fix 2: Check Microphone Permission**
-1. When the app asks "Allow microphone?" → Click **Allow**
-2. Go to browser settings → Check microphone is enabled
-3. Close and reopen the app
+# Using Node.js npx
+npx serve .
+```
+Navigate to `http://localhost:8000` in your web browser.
 
-**Fix 3: Test Your Microphone**
-1. Click the pink 🎤 button on the home page
-2. Say something out loud
-3. If it works, the app will show "✅ SUCCESS!"
-4. If it fails, your mic may not be connected or working
+## Usage Instructions
 
-**Fix 4: Verify Hardware**
-- Check microphone is plugged in (if external)
-- Test mic in another app (Discord, Zoom, Skype)
-- Try restarting your computer
-- Use a different browser (Chrome → Edge)
+1. Verify Audio Input:
+   - On the Home screen, click "Test Microphone First".
+   - Speak into the microphone when prompted. The diagnostic box confirms input detection and reports the recognized phrase.
 
----
+2. Select a Practice Category:
+   - Vowels: 5 vowel items (A, E, I, O, U) with phonetic sound mapping.
+   - Words: 10 everyday vocabulary items (Cat, Dog, Ball, Sun, Tree, Fish, Bird, Star, Moon, Rain).
+   - Phrases: 6 conversational phrases (Hello, Thank you, Good morning, I love you, Please, Sorry).
 
-## 💡 Tips for Best Results
+3. Practice Flow:
+   - Click "Listen" to hear the word pronounced aloud.
+   - Click "Speak" to activate the microphone, then pronounce the word clearly.
+   - The status bar indicates listening progress and captures spoken input.
+   - The result dialog displays whether the pronunciation matched, providing options to continue or retry.
+   - Upon completing all items, the performance screen displays the total score, percentage, and summary.
 
-✅ **DO:**
-- Use a quiet room (close windows and doors)
-- Speak clearly and at normal volume
-- Hold the microphone at a consistent distance
-- Test the microphone first before starting
-- Use Chrome, Edge, or Safari browsers
+4. Audio Controls:
+   - Use the "Sound: ON/OFF" button in the upper-right corner to toggle sound effects.
 
-❌ **DON'T:**
-- Whisper or speak too softly
-- Mumble or run words together
-- Use a microphone with poor quality
-- Have loud background noise
-- Use Internet Explorer (outdated)
+## Keyboard Navigation
 
----
+SpeakUp supports keyboard operation:
 
-## 🌐 Browser Compatibility
+- Spacebar: Toggle microphone recording on the practice page.
+- L: Replay pronunciation audio for the active word.
+- Enter / Right Arrow: Advance to the next word when the result dialog is open.
+- R: Retry the current word from the result dialog.
+- Escape: Return to the home screen or dismiss the dialog.
+- Tab / Enter: Navigate and activate category selection cards.
 
-| Browser | Support |
-|---------|---------|
-| Chrome | ✅ Full Support |
-| Edge | ✅ Full Support |
-| Safari | ✅ Full Support |
-| Firefox | ⚠️ Limited |
-| Internet Explorer | ❌ Not Supported |
+## Speech Evaluation Algorithm
 
----
+The recognition evaluation pipeline in `js/speech.js` processes input through four sequential checks:
 
-## 📝 File Information
+1. Text Normalization: Strips non-alphanumeric characters, converts input to lowercase, and condenses whitespace.
+2. Exact Matching: Compares the normalized phrase against the target word and preconfigured phonetic aliases (e.g., "ay" for vowel "A", "thanks" for "Thank you").
+3. Token and Substring Inclusion: Evaluates individual spoken tokens to recognize target words spoken with hesitation or filler words (e.g., "the cat" or "cat please").
+4. Levenshtein Edit Distance: Calculates edit distance for words of three or more characters, allowing an edit distance tolerance of 1 to accommodate slight pronunciation variations.
 
-- **File Name:** `speakup.html`
-- **File Type:** Single HTML file (no installation needed)
-- **Size:** ~30 KB
-- **Requires:** Internet connection (for fonts and speech recognition)
-- **No Privacy Data:** All processing happens on your device
+## Browser Compatibility
 
----
+| Browser | Speech Recognition | Speech Synthesis | Web Audio API | Overall Support |
+| :--- | :--- | :--- | :--- | :--- |
+| Google Chrome | Yes | Yes | Yes | Fully Supported |
+| Microsoft Edge | Yes | Yes | Yes | Fully Supported |
+| Apple Safari | Yes (iOS 14.5+, macOS 11+) | Yes | Yes | Fully Supported |
+| Mozilla Firefox | Partial (flag-dependent) | Yes | Yes | Limited Speech Input |
+| Opera | Yes | Yes | Yes | Fully Supported |
 
-## 🎯 What Gets Tracked
+Note: A working microphone and active internet connection are required by browser speech recognition engines for transcription processing.
 
-- ✅ Number of correct pronunciations
-- ✅ Total items practiced
-- ✅ Final score percentage
-- ❌ No personal data is collected or saved
+## Testing
 
----
+SpeakUp includes unit tests executed using the Node.js native test runner.
 
-## 🐛 Troubleshooting Console
+Run the test suite:
+```bash
+npm test
+```
 
-To see detailed error messages:
-1. Press **F12** on your keyboard
-2. Click the **Console** tab
-3. When you press Speak, you'll see debug messages like:
-   - "🎤 Started listening"
-   - "📝 You said: ..."
-   - Any error messages
+Run JavaScript syntax validation:
+```bash
+npm run lint
+```
 
-Share these console messages if you need help!
+## Contributing
 
----
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/improvement-name`
+3. Implement your changes following established modular structure.
+4. Run tests and linting: `npm test && npm run lint`
+5. Commit your changes: `git commit -m "Add descriptive message"`
+6. Push to your branch and submit a pull request.
 
-## 🔄 Refresh the Page
+## License
 
-If something isn't working:
-1. Press **Ctrl + R** (Windows) or **Cmd + R** (Mac)
-2. Or click the **🔄 Refresh** button in your browser
-3. Try again from scratch
-
----
-
-## 📞 Support
-
-If you continue to have issues:
-1. Check the microphone works with another app first
-2. Try a different browser
-3. Restart your computer
-4. Make sure your browser is up-to-date
-5. Check internet connection is working
-
----
-
-**Enjoy practicing! 🎉 Keep speaking and improving!** 🌈
+This project is licensed under the MIT License.
