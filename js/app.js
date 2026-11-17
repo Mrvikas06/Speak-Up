@@ -87,6 +87,47 @@ function renderStickers() {
   });
 }
 
+// Theme Management
+const THEMES = ['default', 'contrast', 'dyslexia'];
+let currentThemeIndex = 0;
+
+function initTheme() {
+  try {
+    const saved = localStorage.getItem('speakup_theme');
+    if (saved && THEMES.includes(saved)) {
+      currentThemeIndex = THEMES.indexOf(saved);
+      applyTheme(saved);
+    }
+  } catch (e) {}
+}
+
+function cycleTheme() {
+  if (typeof playClickSound === 'function') playClickSound();
+  currentThemeIndex = (currentThemeIndex + 1) % THEMES.length;
+  const theme = THEMES[currentThemeIndex];
+  applyTheme(theme);
+  try {
+    localStorage.setItem('speakup_theme', theme);
+  } catch (e) {}
+}
+
+function applyTheme(theme) {
+  if (theme === 'default') {
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+  const btn = document.getElementById('theme-btn');
+  if (btn) {
+    const labels = {
+      default: '🎨 Theme: Pastel',
+      contrast: '🌓 Theme: Contrast',
+      dyslexia: '📖 Theme: Dyslexia'
+    };
+    btn.textContent = labels[theme] || '🎨 Theme';
+  }
+}
+
 // Curriculum Category Cards Rendering
 function renderCategoryCards() {
   const grid = document.getElementById('cats-grid');
@@ -748,6 +789,7 @@ window.addEventListener('keydown', e => {
 // Initialize on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
   initBubbles();
+  initTheme();
   renderCategoryCards();
   updateStickerCounter();
   if ('speechSynthesis' in window) {

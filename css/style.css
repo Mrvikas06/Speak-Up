@@ -14,6 +14,50 @@ body{
   position:relative;
 }
 
+/* High Contrast Theme */
+[data-theme="contrast"]{
+  --dark:#0F0F23;
+  --bg:#1A1A3A;
+  --white:#FFFFFF;
+}
+[data-theme="contrast"] body{
+  background:#0F0F23;
+  color:#FFFFFF;
+}
+[data-theme="contrast"] .cat-card,
+[data-theme="contrast"] .word-card,
+[data-theme="contrast"] .result-card,
+[data-theme="contrast"] .complete-card,
+[data-theme="contrast"] .status-bar,
+[data-theme="contrast"] .sticker-card{
+  background:#1E1E3F;
+  border-color:#7C3AED;
+  box-shadow:0 8px 32px rgba(0,0,0,.45);
+}
+[data-theme="contrast"] .app-title,
+[data-theme="contrast"] .cat-name,
+[data-theme="contrast"] .word-text,
+[data-theme="contrast"] .complete-title{
+  color:#FFFFFF;
+}
+[data-theme="contrast"] .section-label,
+[data-theme="contrast"] .app-tagline,
+[data-theme="contrast"] .word-hint,
+[data-theme="contrast"] .cat-desc{
+  color:#D1D5DB;
+}
+
+/* Dyslexia-Friendly Mode */
+[data-theme="dyslexia"] body{
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Verdana', sans-serif;
+  letter-spacing: .08em;
+  word-spacing: .15em;
+  line-height: 1.6;
+}
+[data-theme="dyslexia"] .word-text{
+  letter-spacing: .12em;
+}
+
 /* ── Floating bubbles ── */
 .bubbles{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
 .bubble{position:absolute;border-radius:50%;opacity:.1;animation:floatUp linear infinite}
